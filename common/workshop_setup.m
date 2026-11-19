@@ -6,6 +6,7 @@ function workshop_setup()
 %
 %   Parameters are read from the base workspace used by the Live Script.
 
+workshop_configure_cache();
 check_required_parameters();
 
 sync_model_signal_logging("rocket_6dof_simulation", false);

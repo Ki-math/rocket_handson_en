@@ -29,14 +29,7 @@ if nCase == 0
     return
 end
 
-modelName = char(options.ModelName);
-if ~bdIsLoaded(modelName)
-    open_system(modelName);
-end
-originalFixedStep = get_param(modelName, "FixedStep");
-restoreFixedStep = onCleanup(@() set_param(modelName, ...
-    "FixedStep", originalFixedStep));
-set_param(modelName, "FixedStep", num2str(options.FixedStep));
+workshop_configure_cache();
 
 simIn(1, nCase) = Simulink.SimulationInput(char(options.ModelName));
 for k = 1:nCase
@@ -50,12 +43,23 @@ for k = 1:nCase
     simIn(k) = simIn(k).setVariable("environment_wind", windUEN);
     simIn(k) = simIn(k).setModelParameter( ...
         "StopTime", num2str(options.StopTime), ...
+        "FixedStep", num2str(options.FixedStep), ...
         "SimulationMode", "accelerator");
 end
 
 simOut = sim(simIn, ...
     "UseFastRestart", "on", ...
+    "StopOnError", "on", ...
     "ShowProgress", options.ShowProgress);
+
+% Array simulations can return failed outputs instead of throwing an error.
+% Surface the underlying diagnostic before downstream code tries to read logs.
+for k = 1:numel(simOut)
+    if strlength(string(simOut(k).ErrorMessage)) > 0
+        error("workshop_run_scenarios:SimulationFailed", ...
+            "Scenario %d failed:\n%s", k, simOut(k).ErrorMessage);
+    end
+end
 end
 
 function value = get_base_value(name, fallback)

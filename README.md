@@ -22,6 +22,8 @@ git lfs pull
 
 Run the single-flight sections first. The Monte Carlo section performs 50 simulations and takes longer.
 
+Simulation helpers keep generated files in `cache/R2026a`, `cache/R2026b`, and so on, according to the running MATLAB release. This prevents accelerator-build incompatibilities when switching releases. If a scenario fails, the helper stops the remaining runs and reports the scenario number and underlying Simulink error.
+
 ## Workshop contents
 
 1. Understand vehicle, aerodynamic, propulsion, and parachute models.

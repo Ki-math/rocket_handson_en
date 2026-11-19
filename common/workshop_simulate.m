@@ -8,6 +8,7 @@ if nargin < 2
     stopTime = evalin("base", "sim_stopTime");
 end
 
+workshop_configure_cache();
 in = Simulink.SimulationInput(char(modelName));
 in = in.setModelParameter("StopTime", num2str(stopTime));
 simOut = sim(in);
