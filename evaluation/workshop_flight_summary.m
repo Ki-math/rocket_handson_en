@@ -44,8 +44,29 @@ summary = table(runNumber, flightTime, apogee, maxSpeed, ...
 end
 
 function [landingTime, landingPosition] = interpolate_landing(time, position)
+if isempty(time) || isempty(position)
+    landingTime = NaN;
+    landingPosition = [NaN, NaN, NaN];
+    return
+end
+
+time = time(:);
+
+if size(position, 1) ~= numel(time)
+    n = min(size(position, 1), numel(time));
+    time = time(1:n);
+    position = position(1:n, :);
+end
+
+if size(position, 1) < 2
+    landingTime = time(end);
+    landingPosition = position(end, :);
+    return
+end
+
 altitude = position(:, 1);
 crossing = find(altitude(1:end-1) > 0 & altitude(2:end) <= 0, 1, "last");
+
 if isempty(crossing)
     landingTime = time(end);
     landingPosition = position(end, :);
@@ -55,8 +76,7 @@ end
 k = crossing;
 fraction = altitude(k) / (altitude(k) - altitude(k + 1));
 landingTime = time(k) + fraction * (time(k + 1) - time(k));
-landingPosition = position(k, :) + ...
-    fraction * (position(k + 1, :) - position(k, :));
+landingPosition = position(k, :) + fraction * (position(k + 1, :) - position(k, :));
 landingPosition(1) = 0;
 end
 
